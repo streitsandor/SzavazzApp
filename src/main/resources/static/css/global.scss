@@ -1,0 +1,63 @@
+:root {
+    --app-primary: #0f766e;
+    --app-primary-dark: #115e59;
+    --app-bg: #f6f8fb;
+}
+
+body {
+    background: var(--app-bg);
+}
+
+.app-logo {
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.25rem;
+    color: #fff;
+    background: var(--app-primary);
+    font-size: 1.75rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--app-primary);
+    --bs-btn-border-color: var(--app-primary);
+    --bs-btn-hover-bg: var(--app-primary-dark);
+    --bs-btn-hover-border-color: var(--app-primary-dark);
+    --bs-btn-active-bg: var(--app-primary-dark);
+    --bs-btn-active-border-color: var(--app-primary-dark);
+}
+
+.text-primary {
+    color: var(--app-primary) !important;
+}
+
+.app-navbar {
+    min-height: 4rem;
+}
+
+.status-icon {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+
+    &-success {
+        color: #15803d;
+        background: #dcfce7;
+    }
+
+    &-danger {
+        color: #b91c1c;
+        background: #fee2e2;
+    }
+}
+
+code {
+    white-space: normal;
+}
