@@ -4,7 +4,13 @@ target/
 *.jar
 *.war
 *.ear
+
+# Node / frontend tests
+node_modules/
+
+# SCSS
 *.css
+*.css.map
 
 # Logs
 *.log

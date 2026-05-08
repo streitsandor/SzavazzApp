@@ -261,46 +261,6 @@
             </div>
         </section>
         <!-- SAJÁT SZAVAZÁSOK END -->
-
-        <!-- ADATBÁZIS CONNECTION TESZT -->
-        <section class="mb-0">
-            <div class="card app-card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start gap-3 mb-4">
-                        <div th:classappend="${databaseStatus.connected} ? ' status-icon-success' : ' status-icon-danger'" class="status-icon">
-                            <i th:class="${databaseStatus.connected} ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
-                        </div>
-
-                        <div>
-                            <h2 class="h5 mb-1">Adatbázis kapcsolat teszt</h2>
-                            <p th:class="${databaseStatus.connected} ? 'text-success mb-0' : 'text-danger mb-0'" th:text="${databaseStatus.message}">
-                                Kapcsolati állapot
-                            </p>
-                        </div>
-                    </div>
-
-                    <div th:if="${databaseStatus.connected}" class="table-responsive">
-                        <table class="table table-sm align-middle mb-0">
-                            <tbody>
-                                <tr>
-                                    <th>Teszt lekérdezés</th>
-                                    <td>
-                                        <code>SELECT 1</code> →
-                                        <code th:text="${databaseStatus.testValue}">1</code>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div th:unless="${databaseStatus.connected}" class="alert alert-danger mb-0">
-                        <div class="fw-semibold mb-1">Hiba részlete:</div>
-                        <code th:text="${databaseStatus.error}">Kapcsolódási hiba</code>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- ADATBÁZIS CONNECTION TESZT END -->
     </main>
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>

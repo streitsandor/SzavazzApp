@@ -1,0 +1,14 @@
+{
+    "name": "szavazzapp",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "test:frontend": "jest --config jest.config.js",
+        "test:all": "npm run test:frontend && mvn test"
+    },
+    "devDependencies": {
+        "jest": "29.7.0",
+        "jest-environment-jsdom": "^30.4.1",
+        "jquery": "4.0.0"
+    }
+}
