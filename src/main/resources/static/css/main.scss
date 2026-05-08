@@ -1,0 +1,33 @@
+.app-card {
+    border-radius: 1.25rem;
+}
+
+.poll-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.75rem 1.75rem rgba(15, 23, 42, 0.08) !important;
+    }
+}
+
+.topic-badge {
+    color: #0f766e;
+    background: #ccfbf1;
+    border: 1px solid #99f6e4;
+}
+
+.poll-description {
+    min-height: 3rem;
+}
+
+.poll-options {
+    .btn {
+        white-space: normal;
+        text-align: left;
+    }
+}
+
+section {
+    scroll-margin-top: 5rem;
+}

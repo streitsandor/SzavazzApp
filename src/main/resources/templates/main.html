@@ -36,46 +36,226 @@
     </nav>
 
     <main class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-9 col-xl-8">
-                <div class="mb-4">
-                    <h1 class="h3 mb-2">Főoldal</h1>
+        <div class="mb-4">
+            <h1 class="h3 mb-2">Főoldal</h1>
+        </div>
+
+        <!-- TOP 10 PLACEHOLDER -->
+        <section class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="h5 mb-1">
+                        <i class="fa-solid fa-ranking-star me-2 text-primary"></i>Top 10 szavazás
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Placeholder szekció, legnépszerűbb szavazások kerülnek ide.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-6" th:each="poll, stat : ${topPolls}">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                <div>
+                                    <div class="small text-muted mb-1">
+                                        <i class="fa-solid fa-trophy me-1"></i>
+                                        <span th:text="${stat.index + 1}">1</span>. hely
+                                    </div>
+                                    <h3 class="h5 mb-0" th:text="${poll.title}">Szavazás címe</h3>
+                                </div>
+
+                                <span class="badge text-bg-light border">
+                                    <i class="fa-solid fa-vote-yea me-1"></i>
+                                    <span th:text="${poll.voteCount}">0</span>
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="badge rounded-pill text-bg-secondary me-1" th:each="topic : ${poll.topics}" th:text="${topic}">
+                                    Téma
+                                </span>
+                            </div>
+
+                            <p class="text-muted mb-3" th:text="${poll.description}">
+                                Leírás
+                            </p>
+
+                            <div class="poll-options">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
+                                    Opció
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <!-- TOP 10 PLACEHOLDER END -->
+
+        <!-- MÁS FELHASZNÁLÓK SZAVAZÁSAI -->
+        <section class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="h5 mb-1">
+                        <i class="fa-solid fa-users me-2 text-primary"></i>Más felhasználók szavazásai
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        Ezek azok a szavazások, amelyeket más felhasználók hoztak létre.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-6 col-xl-4" th:each="poll : ${otherUserPolls}">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <h3 class="h5 mb-1" th:text="${poll.title}">Szavazás címe</h3>
+                                    <div class="small text-muted">
+                                        <i class="fa-solid fa-user me-1"></i>
+                                        <span th:text="${poll.ownerName}">felhasználó</span>
+                                    </div>
+                                </div>
+
+                                <span class="badge text-bg-light border">
+                                    <span th:text="${poll.voteCount}">0</span> szavazat
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="badge rounded-pill topic-badge me-1" th:each="topic : ${poll.topics}" th:text="${topic}">
+                                    Téma
+                                </span>
+                            </div>
+
+                            <p class="text-muted poll-description" th:text="${poll.description}">
+                                Leírás
+                            </p>
+
+                            <div class="poll-options mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
+                                    Opció
+                                </button>
+                            </div>
+
+                            <button type="button" class="btn btn-primary btn-sm w-100" disabled>
+                                <i class="fa-solid fa-check me-1"></i>Szavazás
+                            </button>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <!-- MÁS FELHASZNÁLÓK SZAVAZÁSAI END -->
+
+        <!-- SAJÁT SZAVAZÁSOK -->
+        <section class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="h5 mb-1">
+                        <i class="fa-solid fa-folder-open me-2 text-primary"></i>Saját szavazásaim
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        A bejelentkezett felhasználó saját szavazásai.
+                    </p>
                 </div>
 
-                <div class="card app-card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-start gap-3 mb-4">
-                            <div th:classappend="${databaseStatus.connected} ? ' status-icon-success' : ' status-icon-danger'" class="status-icon">
-                                <i th:class="${databaseStatus.connected} ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+                <button type="button" class="btn btn-outline-success btn-sm">
+                    <i class="fa-solid fa-plus me-1"></i>Új szavazás
+                </button>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-6" th:each="poll : ${ownPolls}">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <h3 class="h5 mb-1" th:text="${poll.title}">Saját szavazás címe</h3>
+                                    <div class="small text-muted">
+                                        <i class="fa-solid fa-user-check me-1"></i>Saját szavazás
+                                    </div>
+                                </div>
+
+                                <span class="badge text-bg-light border">
+                                    <span th:text="${poll.voteCount}">0</span> szavazat
+                                </span>
                             </div>
-                            <div>
-                                <h2 class="h5 mb-1">Adatbázis kapcsolat teszt</h2>
-                                <p th:class="${databaseStatus.connected} ? 'text-success mb-0' : 'text-danger mb-0'" th:text="${databaseStatus.message}">
-                                    Kapcsolati állapot
-                                </p>
+
+                            <div class="mb-3">
+                                <span class="badge rounded-pill topic-badge me-1" th:each="topic : ${poll.topics}" th:text="${topic}">
+                                    Téma
+                                </span>
                             </div>
+
+                            <p class="text-muted poll-description" th:text="${poll.description}">
+                                Leírás
+                            </p>
+
+                            <div class="poll-options mb-3">
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
+                                    Opció
+                                </button>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm flex-fill" disabled>
+                                    <i class="fa-solid fa-pen me-1"></i>Szerkesztés
+                                </button>
+
+                                <button type="button" class="btn btn-outline-danger btn-sm flex-fill" disabled>
+                                    <i class="fa-solid fa-lock me-1"></i>Lezárás
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <!-- SAJÁT SZAVAZÁSOK END -->
+
+        <!-- ADATBÁZIS CONNECTION TESZT -->
+        <section class="mb-0">
+            <div class="card app-card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div th:classappend="${databaseStatus.connected} ? ' status-icon-success' : ' status-icon-danger'" class="status-icon">
+                            <i th:class="${databaseStatus.connected} ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
                         </div>
 
-                        <div th:if="${databaseStatus.connected}" class="table-responsive">
-                            <table class="table table-sm align-middle mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th>Teszt lekérdezés</th>
-                                        <td><code>SELECT 1</code> → <code th:text="${databaseStatus.testValue}">1</code>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div>
+                            <h2 class="h5 mb-1">Adatbázis kapcsolat teszt</h2>
+                            <p th:class="${databaseStatus.connected} ? 'text-success mb-0' : 'text-danger mb-0'" th:text="${databaseStatus.message}">
+                                Kapcsolati állapot
+                            </p>
                         </div>
+                    </div>
 
-                        <div th:unless="${databaseStatus.connected}" class="alert alert-danger mb-0">
-                            <div class="fw-semibold mb-1">Hiba részlete:</div>
-                            <code th:text="${databaseStatus.error}">Kapcsolódási hiba</code>
-                        </div>
+                    <div th:if="${databaseStatus.connected}" class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th>Teszt lekérdezés</th>
+                                    <td>
+                                        <code>SELECT 1</code> →
+                                        <code th:text="${databaseStatus.testValue}">1</code>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div th:unless="${databaseStatus.connected}" class="alert alert-danger mb-0">
+                        <div class="fw-semibold mb-1">Hiba részlete:</div>
+                        <code th:text="${databaseStatus.error}">Kapcsolódási hiba</code>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+        <!-- ADATBÁZIS CONNECTION TESZT END -->
     </main>
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
