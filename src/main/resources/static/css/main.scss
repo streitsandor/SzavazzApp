@@ -21,10 +21,24 @@
     min-height: 3rem;
 }
 
-.poll-options {
-    .btn {
-        white-space: normal;
-        text-align: left;
+.poll-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.poll-result-item {
+    padding-bottom: 0.25rem;
+}
+
+.poll-progress {
+    height: 0.85rem;
+    border-radius: 999px;
+    background-color: #e9ecef;
+
+    .progress-bar {
+        border-radius: 999px;
+        min-width: 0.25rem;
     }
 }
 

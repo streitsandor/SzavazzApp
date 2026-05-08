@@ -27,7 +27,7 @@
 
                 <form th:action="@{/logout}" method="post" class="m-0">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
                         <i class="fa-solid fa-right-from-bracket me-1"></i>Kilépés
                     </button>
                 </form>
@@ -40,7 +40,7 @@
             <h1 class="h3 mb-2">Főoldal</h1>
         </div>
 
-        <!-- TOP 10 PLACEHOLDER -->
+        <!-- TOP 10 -->
         <section class="mb-5">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div>
@@ -48,9 +48,13 @@
                         <i class="fa-solid fa-ranking-star me-2 text-primary"></i>Top 10 szavazás
                     </h2>
                     <p class="text-muted small mb-0">
-                        Placeholder szekció, legnépszerűbb szavazások kerülnek ide.
+                        A legtöbb szavazattal rendelkező aktív szavazások.
                     </p>
                 </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(topPolls)}" class="alert alert-light border">
+                Jelenleg nincs megjeleníthető szavazás.
             </div>
 
             <div class="row g-3">
@@ -68,31 +72,42 @@
 
                                 <span class="badge text-bg-light border">
                                     <i class="fa-solid fa-vote-yea me-1"></i>
-                                    <span th:text="${poll.voteCount}">0</span>
+                                    <span th:text="${poll.voteCount}">0</span> szavazat
                                 </span>
                             </div>
 
                             <div class="mb-3">
-                                <span class="badge rounded-pill text-bg-secondary me-1" th:each="topic : ${poll.topics}" th:text="${topic}">
+                                <span class="badge rounded-pill topic-badge me-1" th:each="topic : ${poll.topics}" th:text="${topic}">
                                     Téma
                                 </span>
                             </div>
 
-                            <p class="text-muted mb-3" th:text="${poll.description}">
+                            <p class="text-muted poll-description" th:text="${poll.description}">
                                 Leírás
                             </p>
 
-                            <div class="poll-options">
-                                <button type="button" class="btn btn-outline-primary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
-                                    Opció
-                                </button>
+                            <div class="poll-result-list">
+                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold" th:text="${option.label}">Opció</span>
+                                        <span class="text-muted">
+                                            <span th:text="${option.voteCount}">0</span> szavazat /
+                                            <span th:text="${option.percent}">0</span>%
+                                        </span>
+                                    </div>
+
+                                    <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" th:style="'width: ' + ${option.percent} + '%'">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </article>
                 </div>
             </div>
         </section>
-        <!-- TOP 10 PLACEHOLDER END -->
+        <!-- TOP 10 END -->
 
         <!-- MÁS FELHASZNÁLÓK SZAVAZÁSAI -->
         <section class="mb-5">
@@ -102,9 +117,13 @@
                         <i class="fa-solid fa-users me-2 text-primary"></i>Más felhasználók szavazásai
                     </h2>
                     <p class="text-muted small mb-0">
-                        Ezek azok a szavazások, amelyeket más felhasználók hoztak létre.
+                        Ezek azok az aktív szavazások, amelyeket más felhasználók hoztak létre.
                     </p>
                 </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(otherUserPolls)}" class="alert alert-light border">
+                Jelenleg nincs más felhasználóhoz tartozó aktív szavazás.
             </div>
 
             <div class="row g-3">
@@ -116,7 +135,7 @@
                                     <h3 class="h5 mb-1" th:text="${poll.title}">Szavazás címe</h3>
                                     <div class="small text-muted">
                                         <i class="fa-solid fa-user me-1"></i>
-                                        <span th:text="${poll.ownerName}">felhasználó</span>
+                                        <span th:text="${poll.ownerDisplayName}">felhasználó</span>
                                     </div>
                                 </div>
 
@@ -135,10 +154,21 @@
                                 Leírás
                             </p>
 
-                            <div class="poll-options mb-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
-                                    Opció
-                                </button>
+                            <div class="poll-result-list mb-3">
+                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold" th:text="${option.label}">Opció</span>
+                                        <span class="text-muted">
+                                            <span th:text="${option.voteCount}">0</span> /
+                                            <span th:text="${option.percent}">0</span>%
+                                        </span>
+                                    </div>
+
+                                    <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" th:style="'width: ' + ${option.percent} + '%'">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <button type="button" class="btn btn-primary btn-sm w-100" disabled>
@@ -159,13 +189,17 @@
                         <i class="fa-solid fa-folder-open me-2 text-primary"></i>Saját szavazásaim
                     </h2>
                     <p class="text-muted small mb-0">
-                        A bejelentkezett felhasználó saját szavazásai.
+                        A bejelentkezett felhasználó saját aktív szavazásai.
                     </p>
                 </div>
 
-                <button type="button" class="btn btn-outline-success btn-sm">
+                <button type="button" class="btn btn-outline-success btn-sm" disabled>
                     <i class="fa-solid fa-plus me-1"></i>Új szavazás
                 </button>
+            </div>
+
+            <div th:if="${#lists.isEmpty(ownPolls)}" class="alert alert-light border">
+                Még nincs saját aktív szavazásod.
             </div>
 
             <div class="row g-3">
@@ -195,10 +229,21 @@
                                 Leírás
                             </p>
 
-                            <div class="poll-options mb-3">
-                                <button type="button" class="btn btn-outline-secondary btn-sm me-2 mb-2" th:each="option : ${poll.options}" th:text="${option}">
-                                    Opció
-                                </button>
+                            <div class="poll-result-list mb-3">
+                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold" th:text="${option.label}">Opció</span>
+                                        <span class="text-muted">
+                                            <span th:text="${option.voteCount}">0</span> /
+                                            <span th:text="${option.percent}">0</span>%
+                                        </span>
+                                    </div>
+
+                                    <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" th:style="'width: ' + ${option.percent} + '%'">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="d-flex gap-2">
