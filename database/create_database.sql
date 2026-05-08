@@ -14,6 +14,9 @@ CREATE TABLE user_accounts (
     id BIGINT NOT NULL AUTO_INCREMENT,
     username VARCHAR(80) NOT NULL,
     display_name VARCHAR(120) NOT NULL,
+    password_hash VARCHAR(100) NOT NULL,
+    role VARCHAR(30) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (id),
     UNIQUE KEY uk_user_accounts_username (username)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_hungarian_ci;
@@ -68,13 +71,62 @@ CREATE TABLE poll_options (
         ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_hungarian_ci;
 
-INSERT INTO user_accounts (id, username, display_name) VALUES
-    (1, 'user', 'Teszt Felhasználó'),
-    (2, 'admin', 'Adminisztrátor'),
-    (3, 'anna', 'Anna'),
-    (4, 'peter', 'Péter'),
-    (5, 'eszter', 'Eszter'),
-    (6, 'system', 'Rendszer');
+INSERT INTO user_accounts (
+    id,
+    username,
+    display_name,
+    password_hash,
+    role,
+    enabled
+) VALUES
+    (
+        1,
+        'user',
+        'Teszt Felhasználó',
+        '$2y$05$WfOPfeo4XV1Sz8xekMMeyu.fGKfoi1ucWS8fb0qBr.2Pqi40ppLGa',
+        'USER',
+        TRUE
+    ),
+    (
+        2,
+        'admin',
+        'Adminisztrátor',
+        '$2y$05$GdN1Tg58RgFjw1H35/.lTeUuXNBDnsrUqDjihqEjdgZr70N1Mu9Fe',
+        'ADMIN',
+        TRUE
+    ),
+    (
+        3,
+        'anna',
+        'Anna',
+        '$2y$05$WfOPfeo4XV1Sz8xekMMeyu.fGKfoi1ucWS8fb0qBr.2Pqi40ppLGa',
+        'USER',
+        TRUE
+    ),
+    (
+        4,
+        'peter',
+        'Péter',
+        '$2y$05$WfOPfeo4XV1Sz8xekMMeyu.fGKfoi1ucWS8fb0qBr.2Pqi40ppLGa',
+        'USER',
+        TRUE
+    ),
+    (
+        5,
+        'eszter',
+        'Eszter',
+        '$2y$05$WfOPfeo4XV1Sz8xekMMeyu.fGKfoi1ucWS8fb0qBr.2Pqi40ppLGa',
+        'USER',
+        TRUE
+    ),
+    (
+        6,
+        'system',
+        'Rendszer',
+        '$2y$05$WfOPfeo4XV1Sz8xekMMeyu.fGKfoi1ucWS8fb0qBr.2Pqi40ppLGa',
+        'USER',
+        FALSE
+    );
 
 INSERT INTO topics (id, name) VALUES
     (1, 'Technológia'),

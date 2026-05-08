@@ -21,4 +21,13 @@ public class UserAccount {
 
     @Column(name = "display_name", nullable = false, length = 120)
     private String displayName;
+
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
+
+    @Column(nullable = false, length = 30)
+    private String role;
+
+    @Column(nullable = false)
+    private boolean enabled = true;
 }
