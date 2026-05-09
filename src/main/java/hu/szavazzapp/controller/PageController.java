@@ -33,6 +33,7 @@ public class PageController {
         String username = principal != null ? principal.getName() : "ismeretlen";
 
         model.addAttribute("username", username);
+        model.addAttribute("topics", pollQueryService.findAllTopics());
 
         model.addAttribute("topPolls", pollQueryService.findTopPolls(10));
         model.addAttribute("otherUserPolls", pollQueryService.findOtherUserPolls(username));

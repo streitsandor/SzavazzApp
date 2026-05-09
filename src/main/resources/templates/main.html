@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>SzavazzApp - Főoldal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -59,7 +61,7 @@
 
             <div class="row g-3">
                 <div class="col-12 col-lg-6" th:each="poll, stat : ${topPolls}">
-                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100" th:attr="data-poll-id=${poll.id}, data-poll-title=${poll.title}">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
                                 <div>
@@ -102,6 +104,15 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="d-none">
+                                <div class="js-poll-option-data" th:each="option : ${poll.options}" th:attr="data-option-id=${option.id}, data-option-label=${option.label}">
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary btn-sm w-100 mt-3 js-open-vote-modal">
+                                <i class="fa-solid fa-check me-1"></i>Szavazás
+                            </button>
                         </div>
                     </article>
                 </div>
@@ -128,7 +139,7 @@
 
             <div class="row g-3">
                 <div class="col-12 col-lg-6 col-xl-4" th:each="poll : ${otherUserPolls}">
-                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100" th:attr="data-poll-id=${poll.id}, data-poll-title=${poll.title}">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                 <div>
@@ -171,7 +182,12 @@
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-primary btn-sm w-100" disabled>
+                            <div class="d-none">
+                                <div class="js-poll-option-data" th:each="option : ${poll.options}" th:attr="data-option-id=${option.id}, data-option-label=${option.label}">
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary btn-sm w-100 js-open-vote-modal">
                                 <i class="fa-solid fa-check me-1"></i>Szavazás
                             </button>
                         </div>
@@ -193,7 +209,7 @@
                     </p>
                 </div>
 
-                <button type="button" class="btn btn-outline-success btn-sm" disabled>
+                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPollModal">
                     <i class="fa-solid fa-plus me-1"></i>Új szavazás
                 </button>
             </div>
@@ -204,7 +220,7 @@
 
             <div class="row g-3">
                 <div class="col-12 col-lg-6" th:each="poll : ${ownPolls}">
-                    <article class="card app-card poll-card border-0 shadow-sm h-100">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100" th:attr="data-poll-id=${poll.id}, data-poll-title=${poll.title}">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                 <div>
@@ -254,6 +270,10 @@
                                 <button type="button" class="btn btn-outline-danger btn-sm flex-fill" disabled>
                                     <i class="fa-solid fa-lock me-1"></i>Lezárás
                                 </button>
+
+                                <button type="button" class="btn btn-outline-danger btn-sm flex-fill js-open-delete-modal">
+                                    <i class="fa-solid fa-trash-alt me-1"></i>Törlés
+                                </button>
                             </div>
                         </div>
                     </article>
@@ -262,6 +282,148 @@
         </section>
         <!-- SAJÁT SZAVAZÁSOK END -->
     </main>
+
+    <!-- SZAVAZÁS MODAL -->
+    <div class="modal fade" id="votePollModal" tabindex="-1" aria-labelledby="votePollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content app-modal">
+                <form id="votePollForm">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="votePollModalLabel">Szavazás</h5>
+                            <div class="small text-muted" id="votePollTitle">Szavazás címe</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" id="votePollId">
+
+                        <div class="alert d-none js-modal-alert" role="alert"></div>
+
+                        <div id="votePollOptions" class="vote-option-list"></div>
+
+                        <div class="invalid-feedback d-block d-none js-vote-error">
+                            Válassz egy lehetőséget.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégsem
+                        </button>
+                        <button type="submit" class="btn btn-primary js-submit-vote">
+                            <i class="fa-solid fa-check me-1"></i>Szavazok
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- SZAVAZÁS MODAL END -->
+
+    <!-- ÚJ SZAVAZÁS MODAL -->
+    <div class="modal fade" id="createPollModal" tabindex="-1" aria-labelledby="createPollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content app-modal">
+                <form id="createPollForm" novalidate>
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="createPollModalLabel">Új szavazás létrehozása</h5>
+                            <div class="small text-muted">Saját szavazás létrehozása.</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="alert d-none js-modal-alert" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label for="createPollTitle" class="form-label fw-bold">Cím:</label>
+                            <input type="text" class="form-control" id="createPollTitle" maxlength="180" required>
+                            <div class="invalid-feedback">A cím megadása kötelező.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="createPollTopics" class="form-label fw-bold">Témák:</label>
+                            <select class="form-select" id="createPollTopics" multiple required>
+                                <option th:each="topic : ${topics}" th:value="${topic.id}" th:text="${topic.name}">
+                                    Téma
+                                </option>
+                            </select>
+                            <div class="form-text">Több téma is kiválasztható.</div>
+                            <div class="invalid-feedback">Legalább egy témát válassz ki.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="createPollDescription" class="form-label fw-bold">Leírás:</label>
+                            <textarea class="form-control" id="createPollDescription" rows="4" maxlength="3000" required></textarea>
+                            <div class="invalid-feedback">A leírás megadása kötelező.</div>
+                        </div>
+
+                        <div class="mb-2 d-flex align-items-center justify-content-between">
+                            <label class="form-label fw-bold mb-0">Válaszlehetőségek:</label>
+                            <button type="button" class="btn btn-outline-primary btn-sm js-add-option">
+                                <i class="fa-solid fa-plus me-1"></i>Opció hozzáadása
+                            </button>
+                        </div>
+
+                        <div id="createPollOptions" class="create-option-list"></div>
+
+                        <div class="form-text">
+                            Legalább 2, legfeljebb 10 válaszlehetőség adható meg.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégsem
+                        </button>
+                        <button type="submit" class="btn btn-success js-submit-create">
+                            <i class="fa-solid fa-floppy-disk me-1"></i>Létrehozás
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ÚJ SZAVAZÁS MODAL END -->
+
+    <!-- TÖRLÉS MODAL -->
+    <div class="modal fade" id="deletePollModal" tabindex="-1" aria-labelledby="deletePollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content app-modal">
+                <form id="deletePollForm">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title text-danger" id="deletePollModalLabel">Szavazás törlése</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" id="deletePollId">
+
+                        <div class="alert d-none js-modal-alert" role="alert"></div>
+
+                        <p class="mb-1">Biztosan törölni szeretnéd ezt a szavazást? (<span class="fw-semibold" id="deletePollTitle">Szavazás címe</span>)</p>
+
+                        <div class="fw-bold text-danger">A törlés nem vonható vissza!</div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégsem
+                        </button>
+                        <button type="submit" class="btn btn-danger js-submit-delete">
+                            <i class="fa-solid fa-trash-alt me-1"></i>Törlés
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- TÖRLÉS MODAL END -->
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

@@ -9,6 +9,7 @@ import hu.szavazzapp.model.PollOption;
 import hu.szavazzapp.model.PollStatus;
 import hu.szavazzapp.model.Topic;
 import hu.szavazzapp.repository.PollRepository;
+import hu.szavazzapp.repository.TopicRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class PollQueryService {
 
         private final PollRepository pollRepository;
+        private final TopicRepository topicRepository;
 
-        public PollQueryService(PollRepository pollRepository) {
+        public PollQueryService(PollRepository pollRepository, TopicRepository topicRepository) {
                 this.pollRepository = pollRepository;
+                this.topicRepository = topicRepository;
         }
 
         @Transactional(readOnly = true)
@@ -106,6 +109,14 @@ public class PollQueryService {
                                 percent);
         }
 
+        @Transactional(readOnly = true)
+        public List<TopicView> findAllTopics() {
+                return topicRepository.findAllByOrderByNameAsc()
+                                .stream()
+                                .map(topic -> new TopicView(topic.getId(), topic.getName()))
+                                .toList();
+        }
+
         public record PollCardView(
                         Long id,
                         String title,
@@ -122,5 +133,10 @@ public class PollQueryService {
                         String label,
                         int voteCount,
                         int percent) {
+        }
+
+        public record TopicView(
+                        Long id,
+                        String name) {
         }
 }

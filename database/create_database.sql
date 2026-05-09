@@ -4,6 +4,7 @@ CREATE DATABASE IF NOT EXISTS szavazzapp
 
 USE szavazzapp;
 
+DROP TABLE IF EXISTS votes;
 DROP TABLE IF EXISTS poll_topics;
 DROP TABLE IF EXISTS poll_options;
 DROP TABLE IF EXISTS polls;
@@ -68,6 +69,30 @@ CREATE TABLE poll_options (
     CONSTRAINT fk_poll_options_poll
         FOREIGN KEY (poll_id)
         REFERENCES polls (id)
+        ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_hungarian_ci;
+
+CREATE TABLE votes (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    poll_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_votes_user_poll (user_id, poll_id),
+    KEY ix_votes_poll_id (poll_id),
+    KEY ix_votes_option_id (option_id),
+    CONSTRAINT fk_votes_user
+        FOREIGN KEY (user_id)
+        REFERENCES user_accounts (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_votes_poll
+        FOREIGN KEY (poll_id)
+        REFERENCES polls (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_votes_option
+        FOREIGN KEY (option_id)
+        REFERENCES poll_options (id)
         ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_hungarian_ci;
 

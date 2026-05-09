@@ -14,7 +14,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("SzavazzApp API")
-                        .version("0.1.0")
+                        .version("0.2.0")
                         .description("SzavazzApp automatikusan generált REST API dokumentáció."));
     }
 }
