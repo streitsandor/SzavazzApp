@@ -41,8 +41,9 @@ public class PollApiController {
     @GetMapping("/top")
     @Operation(summary = "Top szavazások lekérdezése")
     public List<PollCardView> getTopPolls(
-            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit) {
-        return pollQueryService.findTopPolls(limit);
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit,
+            Authentication authentication) {
+        return pollQueryService.findTopPolls(getUsername(authentication), limit);
     }
 
     @GetMapping("/other")

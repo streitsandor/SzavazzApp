@@ -14,6 +14,7 @@ describe('SzavazzApp frontend unit tesztek', () => {
     });
 
     test('main: százalékszámítás helyesen kerekít és nullás összes szavazatnál 0-t ad', () => {
+        require('../../main/resources/static/js/global.js');
         require('../../main/resources/static/js/main.js');
 
         expect(window.SzavazzAppMain.calculateVotePercent(1, 3)).toBe(33);
@@ -28,6 +29,7 @@ describe('SzavazzApp frontend unit tesztek', () => {
             </div>
         `;
 
+        require('../../main/resources/static/js/global.js');
         require('../../main/resources/static/js/main.js');
 
         const progressElement = document.querySelector('.poll-progress');

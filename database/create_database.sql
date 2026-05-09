@@ -214,3 +214,10 @@ INSERT INTO poll_options (poll_id, label, vote_count, sort_order) VALUES
     (202, 'Megjelenítés', 1, 1),
     (202, 'Szerkesztés', 1, 2),
     (202, 'Törlés', 1, 3);
+
+INSERT INTO votes (user_id, poll_id, option_id, created_at)
+    SELECT 1, 101, po.id, NOW()
+    FROM poll_options po
+        WHERE po.poll_id = 101
+            AND po.label = 'Szavazás létrehozása'
+    LIMIT 1;

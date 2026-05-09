@@ -35,7 +35,7 @@ public class PageController {
         model.addAttribute("username", username);
         model.addAttribute("topics", pollQueryService.findAllTopics());
 
-        model.addAttribute("topPolls", pollQueryService.findTopPolls(10));
+        model.addAttribute("topPolls", pollQueryService.findTopPolls(username, 10));
         model.addAttribute("otherUserPolls", pollQueryService.findOtherUserPolls(username));
         model.addAttribute("ownPolls", pollQueryService.findOwnPolls(username));
 

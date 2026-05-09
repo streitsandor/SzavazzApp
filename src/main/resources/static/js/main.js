@@ -1,116 +1,21 @@
 (function (window, $) {
     'use strict';
 
-    function normalizePercent(value) {
-        const number = Number(value);
+    const App = window.SzavazzApp;
+    const Utils = App && App.utils;
 
-        if (!Number.isFinite(number)) {
-            return 0;
-        }
-
-        return Math.min(100, Math.max(0, Math.round(number)));
-    }
-
-    function calculateVotePercent(voteCount, totalVotes) {
-        const votes = Number(voteCount);
-        const total = Number(totalVotes);
-
-        if (!Number.isFinite(votes) || !Number.isFinite(total) || total <= 0) {
-            return 0;
-        }
-
-        return normalizePercent((votes * 100) / total);
-    }
-
-    function buildProgressWidth(percent) {
-        return `${normalizePercent(percent)}%`;
-    }
-
-    function applyProgressValue(progressElement, percent) {
-        const normalizedPercent = normalizePercent(percent);
-
-        if (!progressElement) {
-            return normalizedPercent;
-        }
-
-        $progressElement.setAttribute('aria-valuenow', String(normalizedPercent));
-
-        const progressBar = progressElement.querySelector('.progress-bar');
-
-        if (progressBar) {
-            progressBar.style.width = buildProgressWidth(normalizedPercent);
-        }
-
-        return normalizedPercent;
-    }
-
-    function setupCsrfForAjax() {
-        const token = $('meta[name="_csrf"]').attr('content');
-        const header = $('meta[name="_csrf_header"]').attr('content');
-
-        if (!token || !header) {
-            return;
-        }
-
-        $.ajaxSetup({
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader(header, token);
-            }
-        });
-    }
-
-    function showModalAlert($modal, type, message) {
-        const $alert = $modal.find('.js-modal-alert');
-
-        $alert
-            .removeClass('d-none alert-success alert-danger alert-warning')
-            .addClass(`alert-${type}`)
-            .text(message);
-    }
-
-    function hideModalAlert($modal) {
-        $modal.find('.js-modal-alert')
-            .addClass('d-none')
-            .removeClass('alert-success alert-danger alert-warning')
-            .text('');
-    }
-
-    function extractErrorMessage(xhr, fallbackMessage) {
-        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-            return xhr.responseJSON.message;
-        }
-
-        return fallbackMessage || 'A művelet nem sikerült.';
-    }
-
-    function setButtonLoading($button, loading) {
-        if (!$button.length) {
-            return;
-        }
-
-        if (loading) {
-            if (!$button.data('original-html')) {
-                $button.data('original-html', $button.html());
-            }
-
-            $button
-                .prop('disabled', true)
-                .html('<span class="spinner-border spinner-border-sm me-1"></span>Feldolgozás...');
-        } else {
-            $button
-                .prop('disabled', false)
-                .html($button.data('original-html'));
-        }
+    // global.js nincs betöltve a main.js előtt
+    if (!Utils) {
+        throw new Error('Hibás betöltődés.');
     }
 
     function openVoteModal($card) {
         const pollId = $card.attr('data-poll-id');
         const pollTitle = $card.attr('data-poll-title');
-
         const $modal = $('#votePollModal');
         const $optionsContainer = $('#votePollOptions');
 
-        hideModalAlert($modal);
+        Utils.hideModalAlert($modal);
         $('.js-vote-error').addClass('d-none');
 
         $('#votePollId').val(pollId);
@@ -138,8 +43,7 @@
             $optionsContainer.append($label);
         });
 
-        const modal = bootstrap.Modal.getOrCreateInstance($modal[0]);
-        modal.show();
+        bootstrap.Modal.getOrCreateInstance($modal[0]).show();
     }
 
     function submitVote(event) {
@@ -150,14 +54,14 @@
         const pollId = $('#votePollId').val();
         const optionId = $('#votePollOptions input[name="optionId"]:checked').val();
 
-        hideModalAlert($modal);
+        Utils.hideModalAlert($modal);
 
         if (!optionId) {
             $('.js-vote-error').removeClass('d-none');
             return;
         }
 
-        setButtonLoading($button, true);
+        Utils.setButtonLoading($button, true);
 
         $.ajax({
             url: `/api/polls/${pollId}/vote`,
@@ -171,10 +75,10 @@
                 window.location.reload();
             })
             .fail(function (xhr) {
-                showModalAlert($modal, 'danger', extractErrorMessage(xhr, 'A szavazás nem sikerült.'));
+                Utils.showModalAlert($modal, 'danger', Utils.extractErrorMessage(xhr, 'A szavazás nem sikerült.'));
             })
             .always(function () {
-                setButtonLoading($button, false);
+                Utils.setButtonLoading($button, false);
             });
     }
 
@@ -223,7 +127,7 @@
         $form.removeClass('was-validated');
         $form[0].reset();
 
-        hideModalAlert($modal);
+        Utils.hideModalAlert($modal);
 
         $('#createPollOptions').empty();
         addCreateOptionRow();
@@ -257,18 +161,17 @@
         const $form = $(form);
         const $modal = $('#createPollModal');
         const $button = $('.js-submit-create');
-
-        hideModalAlert($modal);
-
         const payload = collectCreatePollPayload();
+
+        Utils.hideModalAlert($modal);
 
         if (!form.checkValidity() || payload.topicIds.length === 0 || payload.options.length < 2) {
             $form.addClass('was-validated');
-            showModalAlert($modal, 'warning', 'Ellenőrizd a kötelező mezőket. Legalább 2 válaszlehetőség szükséges.');
+            Utils.showModalAlert($modal, 'warning', 'Ellenőrizd a kötelező mezőket. Legalább 2 válaszlehetőség szükséges.');
             return;
         }
 
-        setButtonLoading($button, true);
+        Utils.setButtonLoading($button, true);
 
         $.ajax({
             url: '/api/polls',
@@ -280,26 +183,24 @@
                 window.location.reload();
             })
             .fail(function (xhr) {
-                showModalAlert($modal, 'danger', extractErrorMessage(xhr, 'A szavazás létrehozása nem sikerült.'));
+                Utils.showModalAlert($modal, 'danger', Utils.extractErrorMessage(xhr, 'A szavazás létrehozása nem sikerült.'));
             })
             .always(function () {
-                setButtonLoading($button, false);
+                Utils.setButtonLoading($button, false);
             });
     }
 
     function openDeleteModal($card) {
         const pollId = $card.attr('data-poll-id');
         const pollTitle = $card.attr('data-poll-title');
-
         const $modal = $('#deletePollModal');
 
-        hideModalAlert($modal);
+        Utils.hideModalAlert($modal);
 
         $('#deletePollId').val(pollId);
         $('#deletePollTitle').text(pollTitle);
 
-        const modal = bootstrap.Modal.getOrCreateInstance($modal[0]);
-        modal.show();
+        bootstrap.Modal.getOrCreateInstance($modal[0]).show();
     }
 
     function submitDeletePoll(event) {
@@ -309,8 +210,8 @@
         const $button = $('.js-submit-delete');
         const pollId = $('#deletePollId').val();
 
-        hideModalAlert($modal);
-        setButtonLoading($button, true);
+        Utils.hideModalAlert($modal);
+        Utils.setButtonLoading($button, true);
 
         $.ajax({
             url: `/api/polls/${pollId}`,
@@ -320,15 +221,16 @@
                 window.location.reload();
             })
             .fail(function (xhr) {
-                showModalAlert($modal, 'danger', extractErrorMessage(xhr, 'A törlés nem sikerült.'));
+                Utils.showModalAlert($modal, 'danger', Utils.extractErrorMessage(xhr, 'A törlés nem sikerült.'));
             })
             .always(function () {
-                setButtonLoading($button, false);
+                Utils.setButtonLoading($button, false);
             });
     }
 
     function initMainPage() {
-        setupCsrfForAjax();
+        Utils.setupCsrfForAjax();
+        Utils.animateProgressBars(document);
 
         $(document).on('click', '.js-open-vote-modal', function () {
             openVoteModal($(this).closest('.poll-card'));
@@ -363,10 +265,10 @@
     }
 
     window.SzavazzAppMain = {
-        normalizePercent,
-        calculateVotePercent,
-        buildProgressWidth,
-        applyProgressValue,
+        normalizePercent: Utils.normalizePercent,
+        calculateVotePercent: Utils.calculateVotePercent,
+        buildProgressWidth: Utils.buildProgressWidth,
+        applyProgressValue: Utils.applyProgressValue,
         initMainPage
     };
 

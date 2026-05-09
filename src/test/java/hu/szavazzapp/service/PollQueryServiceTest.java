@@ -13,6 +13,7 @@ import hu.szavazzapp.model.Topic;
 import hu.szavazzapp.model.UserAccount;
 import hu.szavazzapp.repository.PollRepository;
 import hu.szavazzapp.repository.TopicRepository;
+import hu.szavazzapp.repository.VoteRepository;
 import hu.szavazzapp.service.PollQueryService.PollCardView;
 import hu.szavazzapp.service.PollQueryService.PollOptionView;
 
@@ -31,6 +32,9 @@ class PollQueryServiceTest {
 
         @Mock
         private TopicRepository topicRepository;
+
+        @Mock
+        private VoteRepository voteRepository;
 
         @InjectMocks
         private PollQueryService pollQueryService;
