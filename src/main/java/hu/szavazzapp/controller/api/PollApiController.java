@@ -4,6 +4,7 @@ import java.util.List;
 
 import hu.szavazzapp.dto.ApiResponse;
 import hu.szavazzapp.dto.CreatePollRequest;
+import hu.szavazzapp.dto.UpdatePollRequest;
 import hu.szavazzapp.dto.VoteRequest;
 import hu.szavazzapp.service.PollCommandService;
 import hu.szavazzapp.service.PollQueryService;
@@ -92,6 +93,30 @@ public class PollApiController {
                 pollId);
 
         return new ApiResponse(true, "Szavazás törölve.");
+    }
+
+    @PutMapping("/{pollId}")
+    @Operation(summary = "Saját aktív szavazás módosítása")
+    public ApiResponse updatePoll(
+            @PathVariable Long pollId,
+            @Valid @RequestBody UpdatePollRequest request,
+            Authentication authentication) {
+        pollCommandService.updatePoll(getUsername(authentication), pollId, request);
+
+        return new ApiResponse(true, "Szavazás módosítva.");
+    }
+
+    @PostMapping("/{pollId}/lock")
+    @Operation(summary = "Saját aktív szavazás zárolása")
+    public ApiResponse lockPoll(
+            @PathVariable Long pollId,
+            Authentication authentication) {
+        pollCommandService.lockPoll(
+                getUsername(authentication),
+                hasRole(authentication, "ADMIN"),
+                pollId);
+
+        return new ApiResponse(true, "Szavazás zárolva.");
     }
 
     private String getUsername(Authentication authentication) {

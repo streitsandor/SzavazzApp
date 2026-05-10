@@ -89,7 +89,7 @@
                             </p>
 
                             <div class="poll-result-list">
-                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                <div class="poll-result-item" th:each="option : ${poll.options}" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-result' : ''">
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span class="fw-semibold" th:text="${option.label}">Opció</span>
                                         <span class="text-muted">
@@ -99,9 +99,13 @@
                                     </div>
 
                                     <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:attr="data-percent=${option.percent}">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-progress-bar' : ''" th:attr="data-percent=${option.percent}">
                                         </div>
                                     </div>
+
+                                    <span th:if="${option.selectedByCurrentUser()}" class="d-block badge text-bg-success mt-2">
+                                        Erre szavaztál
+                                    </span>
                                 </div>
                             </div>
 
@@ -170,7 +174,7 @@
                             </p>
 
                             <div class="poll-result-list mb-3">
-                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                <div class="poll-result-item" th:each="option : ${poll.options}" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-result' : ''">
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span class="fw-semibold" th:text="${option.label}">Opció</span>
                                         <span class="text-muted">
@@ -180,9 +184,13 @@
                                     </div>
 
                                     <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:attr="data-percent=${option.percent}">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-progress-bar' : ''" th:attr="data-percent=${option.percent}">
                                         </div>
                                     </div>
+
+                                    <span th:if="${option.selectedByCurrentUser()}" class="d-block badge text-bg-success mt-2">
+                                        Erre szavaztál
+                                    </span>
                                 </div>
                             </div>
 
@@ -228,7 +236,7 @@
 
             <div class="row g-3">
                 <div class="col-12 col-lg-6" th:each="poll : ${ownPolls}">
-                    <article class="card app-card poll-card border-0 shadow-sm h-100" th:attr="data-poll-id=${poll.id}, data-poll-title=${poll.title}">
+                    <article class="card app-card poll-card border-0 shadow-sm h-100" th:attr="data-poll-id=${poll.id}, data-poll-title=${poll.title}, data-vote-count=${poll.voteCount}">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                 <div>
@@ -254,7 +262,7 @@
                             </p>
 
                             <div class="poll-result-list mb-3">
-                                <div class="poll-result-item" th:each="option : ${poll.options}">
+                                <div class="poll-result-item" th:each="option : ${poll.options}" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-result' : ''">
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span class="fw-semibold" th:text="${option.label}">Opció</span>
                                         <span class="text-muted">
@@ -264,19 +272,31 @@
                                     </div>
 
                                     <div class="progress poll-progress" role="progressbar" th:attr="aria-valuenow=${option.percent}" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:attr="data-percent=${option.percent}">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated js-progress-bar" style="width: 0%" th:classappend="${option.selectedByCurrentUser()} ? ' user-voted-progress-bar' : ''" th:attr="data-percent=${option.percent}">
                                         </div>
                                     </div>
+
+                                    <span th:if="${option.selectedByCurrentUser()}" class="d-block badge text-bg-success mt-2">
+                                        Erre szavaztál
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-none">
+                                <div class="js-poll-topic-data" th:each="topic : ${poll.topicViews}" th:attr="data-topic-id=${topic.id}">
+                                </div>
+
+                                <div class="js-poll-option-data" th:each="option : ${poll.options}" th:attr="data-option-id=${option.id}, data-option-label=${option.label}">
                                 </div>
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary btn-sm flex-fill" disabled>
+                                <button type="button" class="btn btn-outline-primary btn-sm flex-fill js-open-edit-modal">
                                     <i class="fa-solid fa-pen me-1"></i>Szerkesztés
                                 </button>
 
-                                <button type="button" class="btn btn-outline-danger btn-sm flex-fill" disabled>
-                                    <i class="fa-solid fa-lock me-1"></i>Lezárás
+                                <button type="button" class="btn btn-outline-warning btn-sm flex-fill js-open-lock-modal">
+                                    <i class="fa-solid fa-lock me-1"></i>Zárolás
                                 </button>
 
                                 <button type="button" class="btn btn-outline-danger btn-sm flex-fill js-open-delete-modal">
@@ -396,6 +416,116 @@
         </div>
     </div>
     <!-- ÚJ SZAVAZÁS MODAL END -->
+
+    <!-- MÓDOSÍTÁS MODAL -->
+    <div class="modal fade" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content app-modal">
+                <form id="editPollForm" novalidate>
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="editPollModalLabel">Szavazás módosítása</h5>
+                            <div class="small text-muted">Csak saját, aktív szavazás módosítható.</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" id="editPollId">
+
+                        <div class="alert d-none js-modal-alert" role="alert"></div>
+
+                        <div id="editPollOptionsLockedInfo" class="alert alert-warning d-none">
+                            Erre a szavazásra már érkezett szavazat, ezért a válaszlehetőségek nem módosíthatók.
+                            A cím, téma és leírás továbbra is szerkeszthető.
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPollTitle" class="form-label fw-bold">Cím:</label>
+                            <input type="text" class="form-control" id="editPollTitle" maxlength="180" required>
+                            <div class="invalid-feedback">A cím megadása kötelező.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPollTopics" class="form-label fw-bold">Témák:</label>
+                            <select class="form-select" id="editPollTopics" multiple required>
+                                <option th:each="topic : ${topics}" th:value="${topic.id}" th:text="${topic.name}">
+                                    Téma
+                                </option>
+                            </select>
+                            <div class="invalid-feedback">Legalább egy témát válassz ki.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPollDescription" class="form-label fw-bold">Leírás:</label>
+                            <textarea class="form-control" id="editPollDescription" rows="4" maxlength="3000" required></textarea>
+                            <div class="invalid-feedback">A leírás megadása kötelező.</div>
+                        </div>
+
+                        <div class="mb-2 d-flex align-items-center justify-content-between">
+                            <label class="form-label fw-bold mb-0">Válaszlehetőségek:</label>
+                            <button type="button" class="btn btn-outline-primary btn-sm js-add-edit-option">
+                                <i class="fa-solid fa-plus me-1"></i>Opció hozzáadása
+                            </button>
+                        </div>
+
+                        <div id="editPollOptions" class="create-option-list"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégsem
+                        </button>
+                        <button type="submit" class="btn btn-primary js-submit-edit">
+                            <i class="fa-solid fa-floppy-disk me-1"></i>Mentés
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- MÓDOSÍTÁS MODAL END -->
+
+    <!-- ZÁROLÁS MODAL -->
+    <div class="modal fade" id="lockPollModal" tabindex="-1" aria-labelledby="lockPollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content app-modal">
+                <form id="lockPollForm">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title text-warning" id="lockPollModalLabel">Szavazás zárolása</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" id="lockPollId">
+
+                        <div class="alert d-none js-modal-alert" role="alert"></div>
+
+                        <p class="mb-1">
+                            Biztosan zárolni szeretnéd ezt a szavazást?
+                            (<span class="fw-semibold" id="lockPollTitle">Szavazás címe</span>)
+                        </p>
+
+                        <div class="fw-bold text-warning">
+                            Zárolás után nem lehet rá szavazni, és eltűnik az aktív listából.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégsem
+                        </button>
+                        <button type="submit" class="btn btn-warning js-submit-lock">
+                            <i class="fa-solid fa-lock me-1"></i>Zárolás
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ZÁROLÁS MODAL END -->
 
     <!-- TÖRLÉS MODAL -->
     <div class="modal fade" id="deletePollModal" tabindex="-1" aria-labelledby="deletePollModalLabel" aria-hidden="true">

@@ -46,10 +46,11 @@ A projekt indításához szükséges:
 
 2. Futtasd le a projektben található create_database.sql fájlt.
 
-Xampp segítségével: (karakter hiba előfordul!)
+Xampp segítségével:
 ```bash
 C:\xampp\mysql\bin\mysql.exe -u root < database\create_database.sql
 ```
+*Karakter hiba előfordulhat, inkább SQL querry futtató környezetből (pl: phpmyadmin, dbvisualizer) érdemes futtatni!*
 
 ---
 

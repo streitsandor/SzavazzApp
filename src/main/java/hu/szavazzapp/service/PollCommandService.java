@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import hu.szavazzapp.dto.CreatePollRequest;
+import hu.szavazzapp.dto.UpdatePollRequest;
 import hu.szavazzapp.model.*;
 import hu.szavazzapp.repository.*;
 
@@ -157,5 +158,138 @@ public class PollCommandService {
         }
 
         return user;
+    }
+
+    @Transactional
+    public void updatePoll(String username, Long pollId, UpdatePollRequest request) {
+        findEnabledUser(username);
+
+        Poll poll = pollRepository.findById(pollId)
+                .orElseThrow(() -> new IllegalArgumentException("A szavazás nem található."));
+
+        boolean owner = Objects.equals(poll.getOwner().getUsername(), username);
+
+        if (!owner) {
+            throw new AccessDeniedException("Csak a saját szavazás módosítható.");
+        }
+
+        if (poll.getStatus() != PollStatus.ACTIVE) {
+            throw new IllegalArgumentException("Csak aktív szavazás módosítható.");
+        }
+
+        List<Topic> topics = loadTopics(request.topicIds());
+        List<String> cleanedOptions = cleanAndValidateOptions(request.options());
+
+        List<PollOption> existingOptions = poll.getOptions()
+                .stream()
+                .sorted(java.util.Comparator.comparingInt(PollOption::getSortOrder))
+                .toList();
+
+        int totalVotes = existingOptions
+                .stream()
+                .mapToInt(PollOption::getVoteCount)
+                .sum();
+
+        poll.setTitle(request.title().trim());
+        poll.setDescription(request.description().trim());
+
+        poll.getTopics().clear();
+        poll.getTopics().addAll(topics);
+
+        if (totalVotes > 0) {
+            List<String> existingLabels = existingOptions
+                    .stream()
+                    .map(PollOption::getLabel)
+                    .toList();
+
+            if (!existingLabels.equals(cleanedOptions)) {
+                throw new IllegalArgumentException("A válaszlehetőségek már nem módosíthatók, mert érkezett szavazat.");
+            }
+
+            return;
+        }
+
+        poll.getOptions().clear();
+
+        int sortOrder = 1;
+
+        for (String optionLabel : cleanedOptions) {
+            PollOption option = new PollOption();
+            option.setPoll(poll);
+            option.setLabel(optionLabel);
+            option.setVoteCount(0);
+            option.setSortOrder(sortOrder++);
+
+            poll.getOptions().add(option);
+        }
+    }
+
+    @Transactional
+    public void lockPoll(String username, boolean admin, Long pollId) {
+        findEnabledUser(username);
+
+        Poll poll = pollRepository.findById(pollId)
+                .orElseThrow(() -> new IllegalArgumentException("A szavazás nem található."));
+
+        boolean owner = Objects.equals(poll.getOwner().getUsername(), username);
+
+        if (!owner && !admin) {
+            throw new AccessDeniedException("Csak a saját szavazás zárolható.");
+        }
+
+        if (poll.getStatus() == PollStatus.CLOSED) {
+            throw new IllegalArgumentException("A szavazás már zárolva van.");
+        }
+
+        poll.setStatus(PollStatus.CLOSED);
+    }
+
+    private List<Topic> loadTopics(List<Long> rawTopicIds) {
+        List<Long> topicIds = rawTopicIds
+                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (topicIds.isEmpty()) {
+            throw new IllegalArgumentException("Legalább egy témát ki kell választani.");
+        }
+
+        List<Topic> topics = new ArrayList<>();
+        topicRepository.findAllById(topicIds).forEach(topics::add);
+
+        if (topics.size() != topicIds.size()) {
+            throw new IllegalArgumentException("Érvénytelen téma azonosító található.");
+        }
+
+        return topics;
+    }
+
+    private List<String> cleanAndValidateOptions(List<String> rawOptions) {
+        List<String> cleanedOptions = rawOptions
+                .stream()
+                .map(option -> option == null ? "" : option.trim())
+                .filter(option -> !option.isBlank())
+                .toList();
+
+        long distinctOptionCount = cleanedOptions
+                .stream()
+                .map(option -> option.toLowerCase(Locale.ROOT))
+                .distinct()
+                .count();
+
+        if (cleanedOptions.size() < 2) {
+            throw new IllegalArgumentException("Legalább két nem üres válaszlehetőség szükséges.");
+        }
+
+        if (cleanedOptions.size() > 10) {
+            throw new IllegalArgumentException("Legfeljebb 10 válaszlehetőség adható meg.");
+        }
+
+        if (distinctOptionCount != cleanedOptions.size()) {
+            throw new IllegalArgumentException("A válaszlehetőségek között nem lehet duplikáció.");
+        }
+
+        return cleanedOptions;
     }
 }

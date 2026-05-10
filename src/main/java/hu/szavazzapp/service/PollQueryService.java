@@ -2,8 +2,9 @@ package hu.szavazzapp.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import hu.szavazzapp.model.Poll;
 import hu.szavazzapp.model.PollOption;
@@ -34,11 +35,11 @@ public class PollQueryService {
 
         @Transactional(readOnly = true)
         public List<PollCardView> findTopPolls(String username, int limit) {
-                Set<Long> votedPollIds = findVotedPollIds(username);
+                Map<Long, Long> votedOptionIdsByPollId = findVotedOptionIdsByPollId(username);
 
                 return pollRepository.findByStatus(PollStatus.ACTIVE)
                                 .stream()
-                                .map(poll -> toView(poll, votedPollIds))
+                                .map(poll -> toView(poll, votedOptionIdsByPollId))
                                 .sorted(Comparator.comparingInt(PollCardView::voteCount).reversed())
                                 .limit(limit)
                                 .toList();
@@ -51,24 +52,24 @@ public class PollQueryService {
 
         @Transactional(readOnly = true)
         public List<PollCardView> findOtherUserPolls(String username) {
-                Set<Long> votedPollIds = findVotedPollIds(username);
+                Map<Long, Long> votedOptionIdsByPollId = findVotedOptionIdsByPollId(username);
 
                 return pollRepository.findByStatus(PollStatus.ACTIVE)
                                 .stream()
                                 .filter(poll -> !Objects.equals(poll.getOwner().getUsername(), username))
-                                .map(poll -> toView(poll, votedPollIds))
+                                .map(poll -> toView(poll, votedOptionIdsByPollId))
                                 .sorted(Comparator.comparing(PollCardView::id).reversed())
                                 .toList();
         }
 
         @Transactional(readOnly = true)
         public List<PollCardView> findOwnPolls(String username) {
-                Set<Long> votedPollIds = findVotedPollIds(username);
+                Map<Long, Long> votedOptionIdsByPollId = findVotedOptionIdsByPollId(username);
 
                 return pollRepository.findByStatus(PollStatus.ACTIVE)
                                 .stream()
                                 .filter(poll -> Objects.equals(poll.getOwner().getUsername(), username))
-                                .map(poll -> toView(poll, votedPollIds))
+                                .map(poll -> toView(poll, votedOptionIdsByPollId))
                                 .sorted(Comparator.comparing(PollCardView::id).reversed())
                                 .toList();
         }
@@ -81,17 +82,20 @@ public class PollQueryService {
                                 .toList();
         }
 
-        private Set<Long> findVotedPollIds(String username) {
+        private Map<Long, Long> findVotedOptionIdsByPollId(String username) {
                 if (username == null || username.isBlank()) {
-                        return Set.of();
+                        return Map.of();
                 }
 
-                Set<Long> votedPollIds = voteRepository.findPollIdsByUsername(username);
-
-                return votedPollIds == null ? Set.of() : votedPollIds;
+                return voteRepository.findVotesByUsernameWithPollAndOption(username)
+                                .stream()
+                                .collect(Collectors.toMap(
+                                                vote -> vote.getPoll().getId(),
+                                                vote -> vote.getOption().getId(),
+                                                (first, duplicate) -> first));
         }
 
-        private PollCardView toView(Poll poll, Set<Long> votedPollIds) {
+        private PollCardView toView(Poll poll, Map<Long, Long> votedOptionIdsByPollId) {
                 List<PollOption> uniqueOptions = uniqueSortedOptions(poll);
 
                 int totalVotes = uniqueOptions
@@ -99,34 +103,48 @@ public class PollQueryService {
                                 .mapToInt(PollOption::getVoteCount)
                                 .sum();
 
-                List<String> topicNames = poll.getTopics()
+                List<TopicView> topicViews = poll.getTopics()
                                 .stream()
-                                .map(Topic::getName)
-                                .distinct()
-                                .sorted()
+                                .collect(Collectors.toMap(
+                                                Topic::getId,
+                                                topic -> topic,
+                                                (first, duplicate) -> first))
+                                .values()
+                                .stream()
+                                .sorted(Comparator.comparing(Topic::getName))
+                                .map(topic -> new TopicView(topic.getId(), topic.getName()))
                                 .toList();
+
+                List<String> topicNames = topicViews
+                                .stream()
+                                .map(TopicView::name)
+                                .toList();
+
+                Long selectedOptionId = votedOptionIdsByPollId.get(poll.getId());
 
                 List<PollOptionView> options = uniqueOptions
                                 .stream()
-                                .map(option -> toOptionView(option, totalVotes))
+                                .map(option -> toOptionView(option, totalVotes, selectedOptionId))
                                 .toList();
 
                 return new PollCardView(
                                 poll.getId(),
                                 poll.getTitle(),
                                 topicNames,
+                                topicViews,
                                 poll.getDescription(),
                                 options,
                                 poll.getOwner().getDisplayName(),
                                 poll.getOwner().getUsername(),
                                 totalVotes,
-                                votedPollIds.contains(poll.getId()));
+                                selectedOptionId != null,
+                                selectedOptionId);
         }
 
         private List<PollOption> uniqueSortedOptions(Poll poll) {
                 return poll.getOptions()
                                 .stream()
-                                .collect(java.util.stream.Collectors.toMap(
+                                .collect(Collectors.toMap(
                                                 PollOption::getId,
                                                 option -> option,
                                                 (first, duplicate) -> first))
@@ -136,7 +154,7 @@ public class PollQueryService {
                                 .toList();
         }
 
-        private PollOptionView toOptionView(PollOption option, int totalVotes) {
+        private PollOptionView toOptionView(PollOption option, int totalVotes, Long selectedOptionId) {
                 int percent = totalVotes == 0
                                 ? 0
                                 : Math.round((option.getVoteCount() * 100.0f) / totalVotes);
@@ -145,26 +163,30 @@ public class PollQueryService {
                                 option.getId(),
                                 option.getLabel(),
                                 option.getVoteCount(),
-                                percent);
+                                percent,
+                                Objects.equals(option.getId(), selectedOptionId));
         }
 
         public record PollCardView(
                         Long id,
                         String title,
                         List<String> topics,
+                        List<TopicView> topicViews,
                         String description,
                         List<PollOptionView> options,
                         String ownerDisplayName,
                         String ownerUsername,
                         int voteCount,
-                        boolean hasVoted) {
+                        boolean hasVoted,
+                        Long selectedOptionId) {
         }
 
         public record PollOptionView(
                         Long id,
                         String label,
                         int voteCount,
-                        int percent) {
+                        int percent,
+                        boolean selectedByCurrentUser) {
         }
 
         public record TopicView(
