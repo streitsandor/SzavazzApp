@@ -40,17 +40,27 @@ A projekt indításához szükséges:
 
 ---
 
-## Adatbázis előkészítése
+## Program indítás (docker)
 
-1. Indítsd el a XAMPP Control Panelben a MySQL szolgáltatást.
+A projekt Dockerrel is futtatható. Ebben az esetben nem szükséges külön XAMPP MySQL-t indítani, mert a `docker-compose.yml` saját MySQL konténert hoz létre.
 
-2. Futtasd le a projektben található create_database.sql fájlt.
+### Szükséges:
+- Docker Desktop
+- Maven
+- Java 25
 
-Xampp segítségével:
-```bash
-C:\xampp\mysql\bin\mysql.exe -u root < database\create_database.sql
+### Lépések:
+1. Docker indítás
 ```
-*Karakter hiba előfordulhat, inkább SQL querry futtató környezetből (pl: phpmyadmin, dbvisualizer) érdemes futtatni!*
+    - mvn clean package -DskipTests
+    - docker compose up --build
+```
+
+2. Böngészőbe: http://localhost:8080/login
+
+3. Belépés:
+    - user / user123
+    - admin / admin123
 
 ---
 
@@ -78,3 +88,17 @@ http://localhost:8080/v3/api-docs
 http://localhost:8080/v3/api-docs.yaml
 ```
 *Csak bejelentkezés után futtathatóak!*
+
+---
+
+## Adatbázis előkészítése (XAMPP esetén)
+
+1. Indítsd el a XAMPP Control Panelben a MySQL szolgáltatást.
+
+2. Futtasd le a projektben található create_database.sql fájlt.
+
+Xampp segítségével:
+```bash
+C:\xampp\mysql\bin\mysql.exe -u root < database\create_database.sql
+```
+*Karakter hiba előfordulhat, inkább SQL querry futtató környezetből (pl: phpmyadmin, dbvisualizer) érdemes futtatni!*

@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: szavazzapp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: szavazzapp
+      MYSQL_USER: szavazzapp
+      MYSQL_PASSWORD: szavazzapp
+      TZ: Europe/Budapest
+    ports:
+      - "3307:3306"
+    volumes:
+      - szavazzapp_mysql_data:/var/lib/mysql
+      - ./database/create_database.sql:/docker-entrypoint-initdb.d/01-create_database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uszavazzapp -p$${MYSQL_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: szavazzapp-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/szavazzapp?useSSL=false&serverTimezone=Europe/Budapest&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_hungarian_ci
+      SPRING_DATASOURCE_USERNAME: szavazzapp
+      SPRING_DATASOURCE_PASSWORD: szavazzapp
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "8080:8080"
+
+volumes:
+  szavazzapp_mysql_data:

@@ -9,8 +9,9 @@ target/
 node_modules/
 
 # SCSS
-*.css
+# *.css
 *.css.map
+*.scss.map
 
 # Logs
 *.log
@@ -34,5 +35,5 @@ logs/
 Thumbs.db
 
 # Local environment
-.env
+# .env
 application-local.properties

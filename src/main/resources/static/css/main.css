@@ -1,0 +1,110 @@
+.app-modal {
+  border: 0;
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+
+.app-card {
+  border-radius: 1.25rem;
+}
+
+.poll-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.poll-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.75rem 1.75rem rgba(15, 23, 42, 0.08) !important;
+}
+
+.topic-badge {
+  color: #0f766e;
+  background: #ccfbf1;
+  border: 1px solid #99f6e4;
+}
+
+.poll-description {
+  min-height: 3rem;
+}
+
+.poll-result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.poll-result-item {
+  padding-bottom: 0.25rem;
+}
+
+.poll-progress {
+  height: 0.85rem;
+  border-radius: 999px;
+  background-color: #e9ecef;
+  overflow: hidden;
+}
+.poll-progress .progress-bar {
+  width: 0;
+  border-radius: 999px;
+  transition: width 900ms ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poll-progress .progress-bar {
+    transition: none;
+  }
+}
+section {
+  scroll-margin-top: 5rem;
+}
+
+.vote-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vote-option-card {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.vote-option-card:hover {
+  border-color: #86b7fe;
+  background-color: #f8fbff;
+}
+.vote-option-card.is-selected {
+  border-color: #0d6efd;
+  background-color: #eef5ff;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+.vote-option-label {
+  font-weight: 500;
+}
+
+.create-option-list .input-group {
+  border-radius: 0.75rem;
+}
+
+.user-voted-result {
+  padding: 0.75rem;
+  border: 1px solid #badbcc;
+  border-radius: 0.85rem;
+  background-color: #f0fff4;
+}
+
+.user-voted-progress-bar {
+  background-color: #198754 !important;
+}
+
+.poll-card[data-vote-count="0"] .js-open-edit-modal {
+  border-style: solid;
+}
+
+#editPollOptionsLockedInfo {
+  border-radius: 0.85rem;
+}
