@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +75,7 @@ public class PollApiController {
     @PostMapping("/{pollId}/vote")
     @Operation(summary = "Szavazás leadása")
     public ApiResponse vote(
-            @PathVariable Long pollId,
+            @PathVariable @Positive Long pollId,
             @Valid @RequestBody VoteRequest request,
             Authentication authentication) {
         pollCommandService.vote(getUsername(authentication), pollId, request.optionId());
@@ -85,7 +86,7 @@ public class PollApiController {
     @DeleteMapping("/{pollId}")
     @Operation(summary = "Saját szavazás törlése")
     public ApiResponse deletePoll(
-            @PathVariable Long pollId,
+            @PathVariable @Positive Long pollId,
             Authentication authentication) {
         pollCommandService.deletePoll(
                 getUsername(authentication),
@@ -98,7 +99,7 @@ public class PollApiController {
     @PutMapping("/{pollId}")
     @Operation(summary = "Saját aktív szavazás módosítása")
     public ApiResponse updatePoll(
-            @PathVariable Long pollId,
+            @PathVariable @Positive Long pollId,
             @Valid @RequestBody UpdatePollRequest request,
             Authentication authentication) {
         pollCommandService.updatePoll(getUsername(authentication), pollId, request);
@@ -109,7 +110,7 @@ public class PollApiController {
     @PostMapping("/{pollId}/lock")
     @Operation(summary = "Saját aktív szavazás zárolása")
     public ApiResponse lockPoll(
-            @PathVariable Long pollId,
+            @PathVariable @Positive Long pollId,
             Authentication authentication) {
         pollCommandService.lockPoll(
                 getUsername(authentication),

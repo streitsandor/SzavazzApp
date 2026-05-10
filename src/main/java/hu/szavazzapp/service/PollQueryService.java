@@ -106,7 +106,7 @@ public class PollQueryService {
                 List<TopicView> topicViews = poll.getTopics()
                                 .stream()
                                 .collect(Collectors.toMap(
-                                                Topic::getId,
+                                                Topic::getName,
                                                 topic -> topic,
                                                 (first, duplicate) -> first))
                                 .values()
